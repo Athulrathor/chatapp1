@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import Navbar from "./components/Navbar.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
-import SignUpPage from "./pages/signUpPage.jsx";
+import SignUpPage from "./pages/SignUpPage.jsx";
 import SettingPage from "./pages/SettingPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import { Loader } from "lucide-react";
