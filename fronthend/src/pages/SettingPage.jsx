@@ -5,8 +5,9 @@ import THEMES from "../constants/index.js";
 import { Send } from "lucide-react";
 
 const PREVIEW_MESSAGE = [
-  { id: "1", content: "Hey! How it going?", isSend: false },
-  { id: "2", content: "I'm doing great! Just working on new features.", isSend: true },
+  { id: "1", content: "Hey! How's the project going?", isSend: false },
+  { id: "2", content: "Pretty good! Just adding encryption.", isSend: true },
+  { id: "3", content: "Nice 🔐", isSend: false },
 ];
 
 const SettingPage = () => {
@@ -27,9 +28,10 @@ const SettingPage = () => {
           {THEMES.map((t) => (
             <button
               key={t}
-              className={`group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-color ${
-                theme === t ? "bg-base-200" : "hover:bg-base-200/50"
-              }`}
+              className={`group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors border ${theme === t
+                  ? "bg-base-200 border-primary"
+                  : "hover:bg-base-200/50 border-transparent"
+                }`}
               onClick={() => setTheme(t)}
             >
               <div
@@ -51,7 +53,7 @@ const SettingPage = () => {
         </div>
 
         <h1 className="text-lg font-semibold mb-3">Preview</h1>
-        <div className="rounded-xl border border-base-300 overflow-hiddenbg-base-100 shadow-lg">
+        <div className="rounded-xl border border-base-300 overflow-hidden bg-base-100 shadow-lg">
           <div className="p-4 bg-base-200">
             <div className="max-w-lg mx-auto">
 
@@ -63,8 +65,8 @@ const SettingPage = () => {
                       j
                     </div>
                     <div>
-                      <h3 className="font-medium text-sm"></h3>
-                      <p className="text-xs text-base-content/70"></p>
+                      <h3 className="font-medium text-sm">John Doe</h3>
+                      <p className="text-xs text-base-content/70">Online</p>
                     </div>
                   </div>
                 </div>
@@ -72,7 +74,10 @@ const SettingPage = () => {
                 <div className="p-4 space-y-4 min-h-[200px] max-h-[200px] overflow-auto bg-base-100">
                   {PREVIEW_MESSAGE.map((message) => (
                     <div key={message.id} className={`flex ${message.isSend ? "justify-end" : "justify-start"}`} >
-                      <div className={`max-w-[8-%] rounded-xl p-3 shadow-sm ${message.isSend ? "bg-primary text-primary-content" : "bg-base-200"}`}>
+                      <div className={`max-w-[80%] rounded-xl p-3 shadow-sm ${message.isSend
+                          ? "bg-primary text-primary-content"
+                          : "bg-base-200"
+                        }`}>
                         <p className="text-sm">{message.content}</p>
                         <p className={`text-[10px] mt-1.5 ${message.isSend ? "text-primary-content/70" : "text-base-content/70"}`}></p>
                       </div >

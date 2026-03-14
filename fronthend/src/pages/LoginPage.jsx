@@ -16,10 +16,20 @@ const LoginPage = () => {
   
   const { login, isLoginingIn } = useAuthStore();
   
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      login(formData);
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const privateKey = localStorage.getItem("privateKey");
+
+    if (!privateKey) {
+      alert(
+        "Encryption key missing. Please login from your original device or reset keys."
+      );
+      return;
+    }
+
+    login(formData);
+  };
 
   return (
     <div className="min-h-screen grid  lg:grid-cols-2">

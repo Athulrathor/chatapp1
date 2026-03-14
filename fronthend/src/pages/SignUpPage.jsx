@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AuthImagePattern from "../components/AuthImagePattern.jsx";
+import nacl from "tweetnacl";
+import * as util from "tweetnacl-util";
 
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -49,14 +51,26 @@ const SignUpPage = () => {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const success = validateForm();
 
-    if (success === true) {
-      signup(formData);
-    }
+    if (!success) return;
 
+    const keyPair = nacl.box.keyPair();
+
+    const publicKey = util.encodeBase64(keyPair.publicKey);
+    const privateKey = util.encodeBase64(keyPair.secretKey);
+
+    localStorage.setItem("privateKey", privateKey);
+
+    const signupData = {
+      ...formData,
+      publicKey,
+    };
+
+    signup(signupData);
   };
 
   return (

@@ -7,7 +7,7 @@ const base_url = import.meta.env.MODE === "development" ?  "http://localhost:808
 
 export const useAuthStore = create((set,get) => ({
   authUser: null,
-  isSigningup: false,
+  isSigningUp: false,
   isLoginingIn: false,
   isUpdatingProfile: false,
   onlineUsers: [],
@@ -29,7 +29,7 @@ export const useAuthStore = create((set,get) => ({
   },
 
   signup: async (data) => {
-    set({ isSigningup: true });
+    set({ isSigningUp: true });
 
     try {
       const res = await axiosInstance.post("/auth/signup", data);
@@ -39,7 +39,7 @@ export const useAuthStore = create((set,get) => ({
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
-      set({ isSigningup: false });
+      set({ isSigningUp: false });
     }
   },
 
@@ -61,11 +61,18 @@ export const useAuthStore = create((set,get) => ({
   logout: async () => {
     try {
       await axiosInstance.post("/auth/logout");
-      set({ authUser: null });
-      toast.success("Loggged out successfully");
+
       get().disconnectSocket();
+
+      set({
+        authUser: null,
+        socket: null,
+        onlineUsers: [],
+      });
+
+      toast.success("Logged out successfully");
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message);
     }
   },
 
@@ -78,7 +85,7 @@ export const useAuthStore = create((set,get) => ({
       toast.success("Profile updated successfully!!!");
     } catch (error) {
       console.log("Error in updateProfile UseAuthStore", error);
-      toast.error(error);
+      toast.error(error.response?.data?.message || "Profile update failed");
     } finally {
       set({ isUpdatingProfile: false });
     }

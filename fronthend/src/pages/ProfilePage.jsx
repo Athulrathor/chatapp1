@@ -22,10 +22,18 @@ const ProfilePage = () => {
     reader.readAsDataURL(file);
 
     reader.onload = async () => {
-      const base64Image = reader.result;
-      setSelectedImg(base64Image);
-      await updateProfile({profilePic:base64Image})
-    }
+      try {
+        const base64Image = reader.result;
+        setSelectedImg(base64Image);
+        await updateProfile({ profilePic: base64Image });
+      } catch (error) {
+        console.error("Image upload error", error);
+      }
+    };
+
+    reader.onerror = () => {
+      console.error("File reading failed");
+    };
   }
 
   return (

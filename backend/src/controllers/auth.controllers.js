@@ -4,17 +4,17 @@ import User from "../models/user.model.js";
 import cloudinary from "../libs/cloudinary.js";
 
 export const signup = async (req, res) => {
-    
-    const { fullname, email, password } = req.body;
+
+    const { fullname, email, password, publicKey } = req.body;
 
     try {
 
-        if (!fullname || !email || !password) {
+        if (!fullname || !email || !password || !publicKey) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
         if (password.length < 6) {
-            return res.status(400).json({ message: "Password must be atleast 6 charaters" });
+            return res.status(400).json({ message: "Password must be atleast 6 characters" });
         }
 
         const user = await User.findOne({ email });
@@ -25,15 +25,16 @@ export const signup = async (req, res) => {
 
         const salts = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salts);
-        
+
         const newUser = new User({
             fullname,
             email,
             password: hashedPassword,
+            publicKey
         });
 
         if (newUser) {
-            
+
             generateToken(newUser._id, res);
             await newUser.save();
 
@@ -42,12 +43,12 @@ export const signup = async (req, res) => {
                 fullname: newUser.fullname,
                 email: newUser.email,
                 profilePic: newUser.profilePic,
+                publicKey: newUser.publicKey
             });
 
         } else {
-             res.status(400).json({ message: "Invalid user data" });
+            res.status(400).json({ message: "Invalid user data" });
         }
-
 
     } catch (error) {
         console.log("Error in signup controller", error.message);
@@ -59,34 +60,34 @@ export const login = async (req, res) => {
 
     const { email, password } = req.body;
 
-  try {
-    
-      const user = await User.findOne({ email });
+    try {
 
-      if (!user) {
-          return res.status(400).json({message:"Invalid credentials!!!"})
-      }
+        const user = await User.findOne({ email });
 
-      const isPassword = await bcrypt.compare(password, user.password);
-      
+        if (!user) {
+            return res.status(400).json({ message: "Invalid credentials!!!" });
+        }
 
-      if (!isPassword) {
-          return res.status(400).json({ message: "Invalid credentials!!!" });
-      }
+        const isPassword = await bcrypt.compare(password, user.password);
 
-      generateToken(user._id, res);
+        if (!isPassword) {
+            return res.status(400).json({ message: "Invalid credentials!!!" });
+        }
 
-      res.status(200).json({
-          _id: user._id,
-          fullname: user.fullname,
-          email: user.email,
-          profilePic: user.profilePic,
-      });
+        generateToken(user._id, res);
 
-  } catch (error) {
-      console.log("Error in login controller", error.message);
-      res.status(500).json({ message: "Internal server error!!!" });
-  }
+        res.status(200).json({
+            _id: user._id,
+            fullname: user.fullname,
+            email: user.email,
+            profilePic: user.profilePic,
+            publicKey: user.publicKey
+        });
+
+    } catch (error) {
+        console.log("Error in login controller", error.message);
+        res.status(500).json({ message: "Internal server error!!!" });
+    }
 };
 
 export const logout = async (req, res) => {
