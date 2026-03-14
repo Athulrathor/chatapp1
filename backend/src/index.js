@@ -9,7 +9,7 @@ import { app, server } from "./libs/socket.oi.js";
 import path from "path";
 import express from "express";
 
-dotenv.config({ path: "./src/.env" });
+dotenv.config();
 
 const port = process.env.PORT || 10000;
 const __dirname = path.resolve();
@@ -24,7 +24,10 @@ app.use(
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      process.env.CLIENT_URL
+    ],
     credentials: true,
   })
 );
@@ -39,7 +42,7 @@ if (process.env.NODE_ENV === "production") {
     });
 }
 
-server.listen(port, (err) => {
+server.listen(port, "0.0.0.0", (err) => {
     if (err) {
         console.log("Error in server connection!!!");
         
