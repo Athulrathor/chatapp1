@@ -35,19 +35,23 @@ app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
 
 if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../fronthend/dist")));
+  app.use(express.static(path.join(__dirname, "../frontend/dist"))); // ✅ Fixed typo: fronthend → frontend
 
-    app.get("*", (req, res) => {
-        res.sendFile(path.join(__dirname, "../fronthend", "dist", "index.html"));
-    });
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html")); // ✅ Fixed typo: fronthend → frontend
+  });
 }
 
-server.listen(port, "0.0.0.0", (err) => {
+connectDB().then(() => {
+  server.listen(port, "0.0.0.0", (err) => {
     if (err) {
-        console.log("Error in server connection!!!");
-        
+      console.error("Error starting server:", err);
+      process.exit(1); // ✅ Exit on fatal error instead of silently continuing
     } else {
-        console.log("server is running on PORT:", port);
-        connectDB();
+      console.log("Server is running on PORT:", port);
     }
+  });
+}).catch((err) => {
+  console.error("Failed to connect to DB:", err);
+  process.exit(1); // ✅ Exit if DB connection fails
 });
