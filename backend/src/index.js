@@ -42,6 +42,10 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
+
 connectDB().then(() => {
   server.listen(port, "0.0.0.0", (err) => {
     if (err) {
