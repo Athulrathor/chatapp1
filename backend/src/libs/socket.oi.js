@@ -7,7 +7,10 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL,
+        origin: [
+            "http://localhost:5173", // ✅ your frontend
+            process.env.CLIENT_URL,  // ✅ production
+        ],
         credentials: true,
         methods: ["GET", "POST"],
     },
@@ -17,7 +20,7 @@ const io = new Server(server, {
 const userSocketMap = new Map();
 
 export function getSocketId(userId) {
-    return userSocketMap.get(userId);
+    return userSocketMap.get(userId.toString()); // 🔥 FIX
 }
 
 io.on("connection", (socket) => {
@@ -27,10 +30,10 @@ io.on("connection", (socket) => {
     const userId = socket.handshake.query.userId;
 
     if (userId) {
-        userSocketMap.set(userId, socket.id);
+        userSocketMap.set(userId.toString(), socket.id); // 🔥 ensure string
     }
 
-    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+    io.emit("getUserOnline", Array.from(userSocketMap.keys()));
 
     socket.on("disconnect", () => {
 
@@ -40,7 +43,7 @@ io.on("connection", (socket) => {
             userSocketMap.delete(userId);
         }
 
-        io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+        io.emit("getUserOnline", Array.from(userSocketMap.keys()));
     });
 
 });

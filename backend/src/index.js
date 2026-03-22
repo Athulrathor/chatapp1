@@ -43,7 +43,7 @@ app.use("/api/message", messageRoutes);
 // }
 
 connectDB().then(() => {
-  server.listen(port, "0.0.0.0", (err) => {
+  server.listen(port, (err) => {
     if (err) {
       console.error("Error starting server:", err);
       process.exit(1); // ✅ Exit on fatal error instead of silently continuing
