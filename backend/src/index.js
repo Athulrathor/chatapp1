@@ -26,7 +26,7 @@ app.use(
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173","https://chatapp1-chi.vercel.app/"],
     credentials: true,
   })
 );
