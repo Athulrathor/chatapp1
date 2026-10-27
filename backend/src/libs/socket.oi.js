@@ -9,7 +9,8 @@ const io = new Server(server, {
     cors: {
         origin: [
             "http://localhost:5173", // ✅ your frontend
-            process.env.CLIENT_URL,  // ✅ production
+            process.env.CLIENT_URL,
+            "https://chatapp1-chi.vercel.app"// ✅ production
         ],
         credentials: true,
         methods: ["GET", "POST"],
