@@ -38,7 +38,7 @@ export const signup = async (req, res) => {
             fullname,
             email,
             password: hashedPassword,
-            key
+            publicKey: key
         });
 
         if (newUser) {
