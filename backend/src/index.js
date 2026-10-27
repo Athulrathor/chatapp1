@@ -26,13 +26,14 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      process.env.CLIENT_URL
+      process.env.CLIENT_URL,
+      "https://chatapp1-chi.vercel.app"
     ],
     credentials: true,
   })
 );
-app.use("/api/auth", authRoutes);
-app.use("/api/message", messageRoutes);
+app.use("/auth", authRoutes);
+app.use("/message", messageRoutes);
 
 // if (process.env.NODE_ENV === "production") {
 //   app.use(express.static(path.join(__dirname, "../frontend/dist"))); // ✅ Fixed typo: fronthend → frontend
