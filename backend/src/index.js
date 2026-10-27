@@ -30,8 +30,8 @@ app.use(
     credentials: true,
   })
 );
-app.use("/api/auth", authRoutes);
-app.use("/api/message", messageRoutes);
+app.use("/auth", authRoutes);
+app.use("/message", messageRoutes);
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../fronthend/dist")));
