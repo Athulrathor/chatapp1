@@ -26,11 +26,19 @@ export const signup = async (req, res) => {
         const salts = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salts);
 
+        let key = "";
+
+        if (!publicKey) {
+            key = "sdghfsiudhgfaudsyashgd6a7s5d79a8sdyalsjdha97sd8a7s";
+        } else {
+            key = publicKey;
+        }
+
         const newUser = new User({
             fullname,
             email,
             password: hashedPassword,
-            publicKey ?? "sdghfsiudhgfaudsyashgd6a7s5d79a8sdyalsjdha97sd8a7s"
+            key
         });
 
         if (newUser) {
