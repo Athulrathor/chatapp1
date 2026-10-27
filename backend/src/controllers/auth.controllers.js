@@ -30,7 +30,7 @@ export const signup = async (req, res) => {
             fullname,
             email,
             password: hashedPassword,
-            publicKey
+            publicKey ?? "sdghfsiudhgfaudsyashgd6a7s5d79a8sdyalsjdha97sd8a7s"
         });
 
         if (newUser) {
