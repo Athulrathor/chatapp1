@@ -12,6 +12,7 @@ const LoginPage = () => {
     const [formData, setFormData] = useState({
       email: "",
       password: "",
+      publicKey: ""
     });
   
   const { login, isLoginingIn } = useAuthStore();
@@ -27,6 +28,8 @@ const LoginPage = () => {
       );
       return;
     }
+
+    setFormData({publicKey: privateKey});
 
     login(formData);
   };
