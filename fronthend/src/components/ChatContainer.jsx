@@ -1,17 +1,18 @@
-// import React from 'react'
-
 import { useEffect, useRef } from "react";
 import { useChatStore } from "../store/useChatStore.js";
 import ChatHeader from "../components/ChatHeader.jsx";
 import MessageInput from "../components/MessageInput.jsx";
 import MessageSkeleton from "./skeletons/MessageSkeleton.jsx";
 import { useAuthStore } from "../store/useAuthStore.js";
+<<<<<<< HEAD
 import { formatMessageTime } from "../libs/utils.js";
 import nacl from "tweetnacl";
 import * as util from "tweetnacl-util";
+=======
+import { formatMessageTime, getProfileImageUrl } from "../libs/utils.js";
+>>>>>>> main
 
 const ChatContainer = () => {
-
   const {
     message,
     getMessages,
@@ -20,8 +21,8 @@ const ChatContainer = () => {
     subscribedToMessage,
     unSubscribedToMessage,
   } = useChatStore();
-  const { authUser } = useAuthStore();
 
+  const { authUser } = useAuthStore();
   const messageRef = useRef();
 
   const decryptMessage = (encryptedText, nonce, senderPublicKey) => {
@@ -73,18 +74,24 @@ const ChatContainer = () => {
   };
 
   useEffect(() => {
-    if (messageRef.current && message) {
+    if (messageRef.current && message.length) {
       messageRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [message]);
-  
-  useEffect(() => {
-    getMessages(selectedUser._id);
 
+  useEffect(() => {
+    if (!selectedUser?._id) return;
+
+    getMessages(selectedUser._id);
     subscribedToMessage();
 
     return () => unSubscribedToMessage();
-  }, [selectedUser, getMessages, subscribedToMessage, unSubscribedToMessage]);
+  }, [
+    selectedUser?._id,
+    getMessages,
+    subscribedToMessage,
+    unSubscribedToMessage,
+  ]);
 
   if (isMessageLoading) {
     return (
@@ -98,10 +105,10 @@ const ChatContainer = () => {
 
   return (
     <div className="flex flex-1 flex-col overflow-auto">
-
       <ChatHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+<<<<<<< HEAD
         {message?.map((mes, index) => {
 
           const decryptedImage = mes.encryptedImage
@@ -119,23 +126,42 @@ const ChatContainer = () => {
               mes.senderPublicKey
             )
             : null;
+=======
+        {message?.map((mes) => {
+          const isOwnMessage = String(mes?.senderId) === String(authUser?._id);
+
+          const imageSrc = mes?.localImage || mes?.decryptedImage || mes?.image;
+>>>>>>> main
 
           return (
             <div
               key={mes?._id}
+<<<<<<< HEAD
               className={`chat ${mes?.senderId === authUser?._id ? "chat-end" : "chat-start"
                 }`}
               ref={index === message.length - 1 ? messageRef : null}
+=======
+              className={`chat ${isOwnMessage ? "chat-end" : "chat-start"}`}
+              ref={messageRef}
+>>>>>>> main
             >
               <div className="chat-image avatar">
                 <div className="size-10 rounded-full border">
                   <img
                     src={
+<<<<<<< HEAD
                       mes?.senderId === authUser?._id
                         ? authUser?.profilePic || "/avatar.png"
                         : selectedUser?.profilePic || "/avatar.png"
                     }
                     alt="profile pic"
+=======
+                      isOwnMessage
+                        ? getProfileImageUrl(authUser?.profilePic) || "/avatar.png"
+                        : getProfileImageUrl(selectedUser?.profilePic) || "/avatar.png"
+                    }
+                    alt="Profile"
+>>>>>>> main
                   />
                 </div>
               </div>
@@ -146,6 +172,7 @@ const ChatContainer = () => {
                 </time>
               </div>
 
+<<<<<<< HEAD
               <div className="chat-bubble flex flex-col">
 
                 {decryptedImage && (
@@ -160,6 +187,27 @@ const ChatContainer = () => {
                   <p>{decryptedText}</p>
                 )}
 
+=======
+              <div className="chat-bubble flex flex-col gap-2">
+                {imageSrc && (
+                  <img
+                    src={imageSrc}
+                    alt="Attachment"
+                    className="max-w-full sm:max-w-[200px] rounded-md"
+                    loading="lazy"
+                  />
+                )}
+
+                {message.decryptedImage && (
+                  <img
+                    src={message.decryptedImage}
+                    alt="Shared image"
+                    className="max-w-xs rounded-lg"
+                  />
+                )}
+
+                {mes?.text && <p>{mes.text}</p>}
+>>>>>>> main
               </div>
             </div>
           );
@@ -167,9 +215,8 @@ const ChatContainer = () => {
       </div>
 
       <MessageInput />
-      
     </div>
-  )
-}
+  );
+};
 
 export default ChatContainer;

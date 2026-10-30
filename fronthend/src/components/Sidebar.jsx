@@ -6,6 +6,7 @@ import { useAuthStore } from "../store/useAuthStore.js";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton.jsx";
 import { User } from "lucide-react";
 import { useState } from "react";
+import { getProfileImageUrl } from "../libs/utils.js";
 
 const Sidebar = () => {
   const { getUsers, users, isUserLoading, selectedUser, setSelectedUser } =
@@ -63,7 +64,8 @@ const Sidebar = () => {
           >
             <div className="relative mx-auto lg:mx-0">
               <img
-                src={user.profilePic || "avatar.png"}
+                src={getProfileImageUrl(user?.profilePic)}
+                // src={import.meta.env.NODE_ENV === "development" ? `http://localhost:8080/auth/profile-image/${user?.profilePic}` : `import.meta.env.VITE_API_URL}/auth/profile-image/${user?.profilePic}`}
                 alt={user.name}
                 className="size-12 object-cover rounded-full"
               />

@@ -22,7 +22,12 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.0",
+<<<<<<< HEAD
     "nodemon": "^3.1.14",
+=======
+    "multer": "^2.5.0",
+    "nodemon": "^3.1.9",
+>>>>>>> main
     "socket.io": "^4.8.1"
   }
 }
