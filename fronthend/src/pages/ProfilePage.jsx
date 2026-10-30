@@ -42,7 +42,6 @@ const ProfilePage = () => {
 
     setSelectedImg(previewUrl);
 
-<<<<<<< HEAD
     reader.onload = async () => {
       try {
         const base64Image = reader.result;
@@ -57,7 +56,7 @@ const ProfilePage = () => {
       console.error("File reading failed");
     };
   }
-=======
+
     try {
       await updateProfile({ profilePic: file });
     } catch {
@@ -67,7 +66,6 @@ const ProfilePage = () => {
   };
 
 console.log(getProfileImageUrl(authUser?.profilePic));
->>>>>>> main
 
   return (
     <div className="h-screen pt-20">
