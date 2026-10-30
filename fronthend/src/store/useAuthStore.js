@@ -33,11 +33,6 @@ export const setupE2EE = async () => {
   }
 };
 
-const base_url =
-  import.meta.env.MODE === "development"
-    ? "http://localhost:8080"
-    : "https://chatapp-2-w6u8.onrender.com";
-
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   isSigningUp: false,
