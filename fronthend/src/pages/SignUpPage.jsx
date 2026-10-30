@@ -288,7 +288,7 @@ const SignUpPage = () => {
         subtitle="Connect with friends, share moments, and stay with your loved ones"
       />
     </div>
-  );
+  )
 };
 
 export default SignUpPage;
