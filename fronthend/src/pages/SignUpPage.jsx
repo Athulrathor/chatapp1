@@ -54,7 +54,7 @@ const SignUpPage = () => {
     return true;
   };
 
-<<<<<<< HEAD
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -75,7 +75,7 @@ const SignUpPage = () => {
     };
 
     signup(signupData);
-=======
+
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
 
@@ -122,7 +122,7 @@ const SignUpPage = () => {
     if (validateForm() === true) {
       signup(formData);
     }
->>>>>>> main
+
   };
 
   return (
