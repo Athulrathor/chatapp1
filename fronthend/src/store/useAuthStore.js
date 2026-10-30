@@ -144,14 +144,14 @@ export const useAuthStore = create((set, get) => ({
 
       toast.success("Profile picture updated successfully");
     } catch (error) {
-<<<<<<< HEAD
+
       console.log("Error in updateProfile UseAuthStore", error);
       toast.error(error.response?.data?.message || "Profile update failed");
-=======
+
       console.error("Profile update failed:", error);
       toast.error(error.response?.data?.message || "Failed to update profile");
       throw error;
->>>>>>> main
+
     } finally {
       set({ isUpdatingProfile: false });
     }
