@@ -1,32 +1,56 @@
 // import React from 'react'
 
 import { Camera, Mail, User } from "lucide-react";
-import { useAuthStore } from "../store/useAuthStore.js"
+import { useAuthStore } from "../store/useAuthStore.js";
 import { useState } from "react";
+import { getProfileImageUrl } from "../libs/utils.js";
 
 const ProfilePage = () => {
-
-  const [selectedImg,setSelectedImg] = useState(null);
+  const [selectedImg, setSelectedImg] = useState(null);
 
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  // const handleImageUpload = (e) => {
+  //   const file = e.target.files[0];
 
-    if (!file) {
+  //   if (!file) {
+  //     return;
+  //   }
+
+  //   const reader = new FileReader();
+
+  //   reader.readAsDataURL(file);
+
+  //   reader.onload = async () => {
+  //     const base64Image = reader.result;
+  //     setSelectedImg(base64Image);
+  //     await updateProfile({ profilePic: base64Image });
+  //   };
+  // };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert.error("Image must be less than 5 MB");
       return;
     }
 
-    const reader = new FileReader();
+    const previewUrl = URL.createObjectURL(file);
 
-    reader.readAsDataURL(file);
+    setSelectedImg(previewUrl);
 
-    reader.onload = async () => {
-      const base64Image = reader.result;
-      setSelectedImg(base64Image);
-      await updateProfile({profilePic:base64Image})
+    try {
+      await updateProfile({ profilePic: file });
+    } catch {
+      URL.revokeObjectURL(previewUrl);
+      setSelectedImg(null);
     }
-  }
+  };
+
+console.log(getProfileImageUrl(authUser?.profilePic));
 
   return (
     <div className="h-screen pt-20">
@@ -40,10 +64,19 @@ const ProfilePage = () => {
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
               <img
-                src={selectedImg || authUser?.profilePic || "/avatar.png"}
+                src={selectedImg || getProfileImageUrl(authUser?.profilePic) || "/avatar.png"}
                 alt="Profile"
                 className="size-32 rounded-full object-cover border-4"
               />
+              {/* <img
+                src={
+                  selectedImg ||
+                  (authUser?.profilePic
+                    ? `${import.meta.env.NODE_ENV === "development" ? "http://localhost:8080/auth/profile-image" : import.meta.env.VITE_API_URL}/auth/profile-image${authUser.profilePic}`
+                    : "/avatar.png")
+                }
+                alt="Profile"
+              /> */}
               <label
                 htmlFor="avatar-upload"
                 className={`absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 ${
@@ -69,7 +102,6 @@ const ProfilePage = () => {
           </div>
 
           <div className="space-y-6">
-
             <div className="space-y-1.5">
               <div className="text-sm text-zinc-400 flex items-center gap-2">
                 <User className="w-4 h-4" />
@@ -89,14 +121,13 @@ const ProfilePage = () => {
                 {authUser?.email}
               </p>
             </div>
-
           </div>
 
           <div className="mt-6 bg-base-300 rounded-xl p-6">
             <h2 className="text-lg font-medium mb-4">Account information</h2>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between py-2 border-b border-zinc-700 ">
-                <span >Member since</span>
+                <span>Member since</span>
                 <span> {authUser?.createdAt?.split("T")[0]} </span>
               </div>
               <div className="flex items-center justify-between py-2">
@@ -105,11 +136,10 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
-  )
+  );
 };
 
 export default ProfilePage;

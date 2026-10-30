@@ -1,6 +1,7 @@
 
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
+import e2eeRoutes from "./routes/e2ee.route.js";
 import dotenv from "dotenv";
 import { connectDB } from "./libs/db.js";
 import cookieParser from "cookie-parser";
@@ -16,7 +17,7 @@ const __dirname = path.resolve();
 
 // const app = express();
 
-app.use(express.json());
+app.use(express.json("50mb"));
 app.use(
   express.urlencoded({
     limit: "50mb",
@@ -32,6 +33,7 @@ app.use(
 );
 app.use("/auth", authRoutes);
 app.use("/message", messageRoutes);
+app.use("/e2ee", e2eeRoutes);
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../fronthend/dist")));
