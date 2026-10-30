@@ -4,17 +4,15 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { initializeIdentityKey } from "../libs/e2ee.js";
 
-<<<<<<< HEAD
 const base_url =
   import.meta.env.MODE === "development"
     ? "http://localhost:8080"
     : "https://chatapp-2-w6u8.onrender.com";
-=======
+
 export const setupE2EE = async () => {
   try {
     // Generate or load the existing browser identity.
     const identity = await initializeIdentityKey();
->>>>>>> main
 
     // Register the public key with the backend.
     await axiosInstance.post("/e2ee/public-key", {
