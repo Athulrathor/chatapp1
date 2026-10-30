@@ -30,52 +30,63 @@ const SignUpPage = () => {
 
   const { signup, isSigningUp } = useAuthStore();
 
+  // Form validation
   const validateForm = () => {
     if (!formData.fullname.trim()) {
-      return toast.error("Fullname is required!");
+      toast.error("Fullname is required!");
+      return false;
     }
 
     if (!formData.email.trim()) {
-      return toast.error("Email is required!");
+      toast.error("Email is required!");
+      return false;
     }
 
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      return toast.error("Invalid email format!");
+      toast.error("Invalid email format!");
+      return false;
     }
 
     if (!formData.password) {
-      return toast.error("Password is required!");
+      toast.error("Password is required!");
+      return false;
     }
 
     if (formData.password.length < 6) {
-      return toast.error("Password must be at least 6 characters!");
+      toast.error("Password must be at least 6 characters!");
+      return false;
     }
 
     return true;
   };
 
-
+  // Signup
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const success = validateForm();
+    if (!validateForm()) return;
 
-    if (!success) return;
+    try {
+      const keyPair = nacl.box.keyPair();
 
-    const keyPair = nacl.box.keyPair();
+      const publicKey = util.encodeBase64(keyPair.publicKey);
+      const privateKey = util.encodeBase64(keyPair.secretKey);
 
-    const publicKey = util.encodeBase64(keyPair.publicKey);
-    const privateKey = util.encodeBase64(keyPair.secretKey);
+      const signupData = {
+        ...formData,
+        publicKey,
+      };
 
-    localStorage.setItem("privateKey", privateKey);
+      await signup(signupData);
 
-    const signupData = {
-      ...formData,
-      publicKey,
-    };
+      // Save only after successful signup.
+      localStorage.setItem("privateKey", privateKey);
+    } catch (error) {
+      console.error("Signup failed:", error);
+    }
+  };
 
-    signup(signupData);
-
+  // Profile image selection
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
 
@@ -95,6 +106,10 @@ const SignUpPage = () => {
       return;
     }
 
+    if (profilePreview) {
+      URL.revokeObjectURL(profilePreview);
+    }
+
     setFormData((prev) => ({
       ...prev,
       profilePic: file,
@@ -103,6 +118,7 @@ const SignUpPage = () => {
     setProfilePreview(URL.createObjectURL(file));
   };
 
+  // Remove profile image
   const removeProfileImage = () => {
     if (profilePreview) {
       URL.revokeObjectURL(profilePreview);
@@ -114,15 +130,6 @@ const SignUpPage = () => {
       ...prev,
       profilePic: null,
     }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (validateForm() === true) {
-      signup(formData);
-    }
-
   };
 
   return (
