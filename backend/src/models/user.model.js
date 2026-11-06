@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-<<<<<<< HEAD
 const userSchema = new mongoose.Schema({
         email: {
             type: String,
@@ -25,7 +24,7 @@ const userSchema = new mongoose.Schema({
             unique: true,
             required:  true,
         }
-=======
+
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -45,12 +44,10 @@ const userSchema = new mongoose.Schema(
     profilePic: {
       type: String,
       default: "",
->>>>>>> main
     },
 
     e2eePublicKey: {
       type: String,
-      default: null,
     },
 
     e2eeKeyVersion: {
