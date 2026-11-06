@@ -132,7 +132,7 @@ export const useChatStore = create((set, get) => ({
 
             return {
               ...message,
-              text: "[Unable to decrypt this message]",
+              text: "[Unable]",
             };
           }
         }),

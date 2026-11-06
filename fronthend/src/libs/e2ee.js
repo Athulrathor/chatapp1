@@ -274,13 +274,6 @@ export const decryptMessage = async ({
     !encryptedPayload?.iv ||
     !encryptedPayload?.salt
   ) {
-    console.log("DECRYPT FUNCTION INPUT:", {
-      encryptionVersion: message?.encryptionVersion,
-      senderId: message?.senderId,
-      receiverId: message?.receiverId,
-      encryptedPayload: message?.encryptedPayload,
-      payloadKeys: Object.keys(message?.encryptedPayload || {}),
-    });
     throw new Error("Invalid encrypted message");
   }
 

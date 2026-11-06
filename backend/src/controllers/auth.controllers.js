@@ -83,7 +83,7 @@ export const signup = async (req, res) => {
     generateToken(newUser._id, res);
 
     return res.status(201).json({
-      id: newUser._id,
+      _id: newUser._id,
       fullname: newUser.fullname,
       email: newUser.email,
       profilePic: newUser.profilePic,

@@ -4,25 +4,47 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { initializeIdentityKey } from "../libs/e2ee.js";
 
-export const setupE2EE = async () => {
+export const setupE2EE = async (userId) => {
   try {
-    // Generate or load the existing browser identity.
     const identity = await initializeIdentityKey();
 
-    // Register the public key with the backend.
+    try {
+      // Fetch the current user's registered public key.
+      const response = await axiosInstance.get(`/e2ee/public-key/${userId}`);
+
+      const registeredKey = response.data;
+
+      if (
+        registeredKey.keyVersion !== identity.keyVersion ||
+        registeredKey.publicKey !== identity.publicKey
+      ) {
+        throw new Error(
+          "Local encryption identity does not match the registered server identity.",
+        );
+      }
+
+      console.log("Existing E2EE identity verified");
+      return true;
+    } catch (error) {
+      // Only register when the server confirms no key exists.
+      if (error.response?.status !== 404) {
+        throw error;
+      }
+    }
+
     await axiosInstance.post("/e2ee/public-key", {
       publicKey: identity.publicKey,
       keyVersion: identity.keyVersion,
     });
 
-    console.log("E2EE identity initialized successfully");
-
+    console.log("New E2EE identity registered");
     return true;
   } catch (error) {
-    console.error(
-      "E2EE initialization failed:",
-      error.response?.data || error.message,
-    );
+    console.error("E2EE initialization failed:", {
+      status: error.response?.status,
+      response: error.response?.data,
+      message: error.message,
+    });
 
     throw error;
   }
@@ -46,11 +68,15 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
-
       set({ authUser: res.data });
-
-      await get().initializeE2EE();
-      get().connectSocket();
+      try {
+        await get().initializeE2EE(res.data._id);
+        get().connectSocket();
+      } catch (e2eeError) {
+        console.error("E2EE initialization failed:", e2eeError);
+        // Keep the authenticated user.
+        // Messaging should remain unavailable until E2EE is fixed.
+      }
     } catch (error) {
       console.log("Error in checkAuth:", error);
       set({ authUser: null });
@@ -59,9 +85,15 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  initializeE2EE: async () => {
+  initializeE2EE: async (id) => {
     try {
-      await setupE2EE();
+      const userId = get().authUser?.id ?? id;
+      if (!userId) {
+        throw new Error("Authenticated user ID is unavailable");
+      }
+
+      await setupE2EE(userId);
+
       console.log("E2EE setup completed");
     } catch (error) {
       console.error("E2EE setup failed:", error);
@@ -87,12 +119,16 @@ export const useAuthStore = create((set, get) => ({
       const res = await axiosInstance.post("/auth/signup", formData);
 
       set({ authUser: res.data });
-      toast.success("Account created successfully!!!");
+
+      await get().initializeE2EE(res.data._id);
       get().connectSocket();
+      toast.success("Account created successfully!!!");
+      return true;
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Signup failed. Please try again.",
       );
+      set({ authUser: null });
     } finally {
       set({ isSigningup: false });
     }
@@ -103,11 +139,23 @@ export const useAuthStore = create((set, get) => ({
 
     try {
       const res = await axiosInstance.post("/auth/login", data);
+
       set({ authUser: res.data });
-      toast.success("Logged in successfully!!!");
+
+      // Restore existing identity and register public key.
+      await get().initializeE2EE(res.data._id);
+
       get().connectSocket();
+
+      toast.success("Logged in successfully!");
+      return true;
     } catch (error) {
-      toast.error(error.response.data.message);
+      console.error("Login failed:", error);
+
+      toast.error(
+        error.response?.data?.message || error.message || "Login failed",
+      );
+      return false;
     } finally {
       set({ isLoginingIn: false });
     }
