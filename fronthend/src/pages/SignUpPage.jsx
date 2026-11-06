@@ -79,12 +79,22 @@ const SignUpPage = () => {
 
       await signup(signupData);
 
+<<<<<<< HEAD
       // Save only after successful signup.
       localStorage.setItem("privateKey", privateKey);
     } catch (error) {
       console.error("Signup failed:", error);
     }
   };
+=======
+    const signupData = {
+      ...formData,
+      publicKey,
+    };
+
+    signup(signupData);
+  }
+>>>>>>> bcafa4e549a7b2d83790f11c8ab5c962c6d4b539
 
   // Profile image selection
   const handleImageChange = (e) => {
@@ -320,7 +330,7 @@ const SignUpPage = () => {
         subtitle="Connect with friends, share moments, and stay with your loved ones"
       />
     </div>
-  );
+  )
 };
 
 export default SignUpPage;

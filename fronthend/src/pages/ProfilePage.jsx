@@ -33,6 +33,24 @@ const ProfilePage = () => {
 
     setSelectedImg(previewUrl);
 
+<<<<<<< HEAD
+=======
+    reader.onload = async () => {
+      try {
+        const base64Image = reader.result;
+        setSelectedImg(base64Image);
+        await updateProfile({ profilePic: base64Image });
+      } catch (error) {
+        console.error("Image upload error", error);
+      }
+    };
+
+    reader.onerror = () => {
+      console.error("File reading failed");
+    };
+  }
+
+>>>>>>> bcafa4e549a7b2d83790f11c8ab5c962c6d4b539
     try {
       await updateProfile({ profilePic: file });
     } catch (error) {
@@ -45,6 +63,11 @@ const ProfilePage = () => {
     }
   };
 
+<<<<<<< HEAD
+=======
+console.log(getProfileImageUrl(authUser?.profilePic));
+
+>>>>>>> bcafa4e549a7b2d83790f11c8ab5c962c6d4b539
   return (
     <div className="h-screen pt-20">
       <div className="max-w-2xl mx-auto p-4 py-8">
