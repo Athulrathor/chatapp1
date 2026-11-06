@@ -23,7 +23,6 @@ const userSchema = new mongoose.Schema(
 
     e2eePublicKey: {
       type: String,
-      default: null,
     },
 
     e2eeKeyVersion: {
