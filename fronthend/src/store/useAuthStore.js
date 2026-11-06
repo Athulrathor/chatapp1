@@ -69,6 +69,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await axiosInstance.get("/auth/check");
       set({ authUser: res.data });
+
       try {
         await get().initializeE2EE(res.data._id);
         get().connectSocket();
