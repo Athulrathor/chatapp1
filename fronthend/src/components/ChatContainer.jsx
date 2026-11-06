@@ -1,9 +1,10 @@
+
 import { useEffect, useRef } from "react";
 import { useChatStore } from "../store/useChatStore.js";
+import { useAuthStore } from "../store/useAuthStore.js";
 import ChatHeader from "../components/ChatHeader.jsx";
 import MessageInput from "../components/MessageInput.jsx";
 import MessageSkeleton from "./skeletons/MessageSkeleton.jsx";
-import { useAuthStore } from "../store/useAuthStore.js";
 import { formatMessageTime, getProfileImageUrl } from "../libs/utils.js";
 
 const ChatContainer = () => {
@@ -17,13 +18,7 @@ const ChatContainer = () => {
   } = useChatStore();
 
   const { authUser } = useAuthStore();
-  const messageRef = useRef();
-
-  useEffect(() => {
-    if (messageRef.current && message.length) {
-      messageRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [message]);
+  const bottomRef = useRef(null);
 
   useEffect(() => {
     if (!selectedUser?._id) return;
@@ -39,34 +34,35 @@ const ChatContainer = () => {
     unSubscribedToMessage,
   ]);
 
-  if (isMessageLoading) {
-    return (
-      <div className="flex-1 flex flex-col overflow-auto">
-        <ChatHeader />
-        <MessageSkeleton />
-        <MessageInput />
-      </div>
-    );
-  }
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [message]);
 
   return (
-    <div className="flex flex-1 flex-col overflow-auto">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-base-200/30">
       <ChatHeader />
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {message?.map((mes) => {
-          const isOwnMessage = String(mes?.senderId) === String(authUser?._id);
+      {isMessageLoading ? (
+        <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-5">
+          <MessageSkeleton />
+        </div>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5 sm:px-5">
+          <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
+            {message?.map((mes, index) => {
+              const isOwnMessage =
+                String(mes?.senderId) === String(authUser?._id);
 
-          const imageSrc = mes?.localImage || mes?.decryptedImage || mes?.image;
+              const imageSrc =
+                mes?.localImage || mes?.decryptedImage || mes?.image;
 
-          return (
-            <div
-              key={mes?._id}
-              className={`chat ${isOwnMessage ? "chat-end" : "chat-start"}`}
-              ref={messageRef}
-            >
-              <div className="chat-image avatar">
-                <div className="size-10 rounded-full border">
+              return (
+                <div
+                  key={mes?._id || index}
+                  className={`flex w-full items-end gap-2 ${
+                    isOwnMessage ? "flex-row-reverse" : "flex-row"
+                  }`}
+                >
                   <img
                     src={
                       isOwnMessage
@@ -74,40 +70,49 @@ const ChatContainer = () => {
                         : getProfileImageUrl(selectedUser?.profilePic) || "/avatar.png"
                     }
                     alt="Profile"
+                    className="size-8 shrink-0 rounded-full object-cover"
                   />
+
+                  <div
+                    className={`flex max-w-[85%] min-w-0 flex-col sm:max-w-[70%] ${
+                      isOwnMessage ? "items-end" : "items-start"
+                    }`}
+                  >
+                    <div
+                      className={`overflow-hidden rounded-2xl px-3.5 py-2.5 shadow-sm ${
+                        isOwnMessage
+                          ? "rounded-br-sm bg-primary text-primary-content"
+                          : "rounded-bl-sm border border-base-300 bg-base-100"
+                      }`}
+                    >
+                      {imageSrc && (
+                        <img
+                          src={imageSrc}
+                          alt="Message attachment"
+                          className="mb-2 max-h-72 max-w-full rounded-xl object-contain"
+                          loading="lazy"
+                        />
+                      )}
+
+                      {mes?.text && (
+                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                          {mes.text}
+                        </p>
+                      )}
+                    </div>
+
+                    <time className="mt-1 px-1 text-[10px] text-base-content/40">
+                      {formatMessageTime(mes?.createdAt)}
+                    </time>
+                  </div>
                 </div>
-              </div>
+              );
+            })}
 
-              <div className="chat-header mb-1">
-                <time className="text-xs opacity-50 ml-1">
-                  {formatMessageTime(mes?.createdAt)}
-                </time>
-              </div>
-
-              <div className="chat-bubble flex flex-col gap-2">
-                {imageSrc && (
-                  <img
-                    src={imageSrc}
-                    alt="Attachment"
-                    className="max-w-full sm:max-w-[200px] rounded-md"
-                    loading="lazy"
-                  />
-                )}
-
-                {message.decryptedImage && (
-                  <img
-                    src={message.decryptedImage}
-                    alt="Shared image"
-                    className="max-w-xs rounded-lg"
-                  />
-                )}
-
-                {mes?.text && <p>{mes.text}</p>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            <div ref={bottomRef} />
+          </div>
+        </div>
+      )}
 
       <MessageInput />
     </div>

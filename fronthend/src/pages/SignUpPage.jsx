@@ -1,6 +1,6 @@
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useAuthStore } from "../store/useAuthStore.js";
 import {
   User,
   MessageSquare,
@@ -13,7 +13,12 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+import { useAuthStore } from "../store/useAuthStore.js";
 import AuthImagePattern from "../components/AuthImagePattern.jsx";
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,28 +33,21 @@ const SignUpPage = () => {
 
   const { signup, isSigningUp } = useAuthStore();
 
-  const validateForm = () => {
-    if (!formData.fullname.trim()) {
-      return toast.error("Fullname is required!");
-    }
+  useEffect(() => {
+    return () => {
+      if (profilePreview) {
+        URL.revokeObjectURL(profilePreview);
+      }
+    };
+  }, [profilePreview]);
 
-    if (!formData.email.trim()) {
-      return toast.error("Email is required!");
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      return toast.error("Invalid email format!");
-    }
-
-    if (!formData.password) {
-      return toast.error("Password is required!");
-    }
-
-    if (formData.password.length < 6) {
-      return toast.error("Password must be at least 6 characters!");
-    }
-
-    return true;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleImageChange = (e) => {
@@ -57,15 +55,13 @@ const SignUpPage = () => {
 
     if (!file) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-
-    if (!allowedTypes.includes(file.type)) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
       toast.error("Only JPG, PNG and WEBP images are allowed!");
       e.target.value = "";
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > MAX_IMAGE_SIZE) {
       toast.error("Image must be smaller than 5 MB!");
       e.target.value = "";
       return;
@@ -77,13 +73,10 @@ const SignUpPage = () => {
     }));
 
     setProfilePreview(URL.createObjectURL(file));
+    e.target.value = "";
   };
 
   const removeProfileImage = () => {
-    if (profilePreview) {
-      URL.revokeObjectURL(profilePreview);
-    }
-
     setProfilePreview("");
 
     setFormData((prev) => ({
@@ -92,54 +85,86 @@ const SignUpPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    if (!formData.fullname.trim()) {
+      toast.error("Full name is required!");
+      return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      toast.error("Please enter a valid email address!");
+      return false;
+    }
+
+    if (!formData.password) {
+      toast.error("Password is required!");
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters!");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (validateForm() === true) {
-      signup(formData);
-    }
+    if (isSigningUp || !validateForm()) return;
+
+    await signup({
+      ...formData,
+      fullname: formData.fullname.trim(),
+      email: formData.email.trim(),
+    });
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
-      <div className="flex flex-col justify-center items-center sm:p-12">
-        <div className="w-full max-w-md space-y-8 px-6 py-2">
-          <div className="text-center mb-8">
-            <div className="flex flex-col items-center gap-2 group">
-              <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <MessageSquare className="size-6 text-primary" />
-              </div>
+    <main className="grid min-h-[100dvh] grid-cols-1 lg:grid-cols-2">
 
-              <h1 className="text-2xl font-bold mt-2">
-                Create Account
-              </h1>
+      {/* Signup form */}
+      <section className="flex min-w-0 items-center justify-center px-4 py-10 sm:px-8 lg:px-10">
+        <div className="w-full max-w-md space-y-7">
 
-              <p className="text-base-content/60">
-                Get started with your free account
-              </p>
+          {/* Header */}
+          <div className="text-center">
+            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <MessageSquare size={27} />
             </div>
+
+            <h1 className="mt-5 text-2xl font-bold tracking-tight sm:text-3xl">
+              Create Account
+            </h1>
+
+            <p className="mt-2 text-sm text-base-content/60">
+              Get started with your free account
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="space-y-5">
+
             {/* Profile picture */}
-            <div className="form-control mb-6">
-              <label className="label">
-                <span className="label-text font-medium">
-                  Profile Picture (Optional)
+            <div className="space-y-3">
+              <label className="text-sm font-medium">
+                Profile picture
+                <span className="ml-1 text-base-content/50">
+                  (Optional)
                 </span>
               </label>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <div className="relative size-20 shrink-0">
                   {profilePreview ? (
                     <img
                       src={profilePreview}
                       alt="Profile preview"
-                      className="size-20 rounded-full object-cover border border-base-300"
+                      className="size-20 rounded-full border border-base-300 object-cover"
                     />
                   ) : (
-                    <div className="size-20 rounded-full bg-base-200 flex items-center justify-center">
-                      <User className="size-9 text-base-content/40" />
+                    <div className="flex size-20 items-center justify-center rounded-full border border-base-300 bg-base-200">
+                      <User size={34} className="text-base-content/40" />
                     </div>
                   )}
 
@@ -147,148 +172,172 @@ const SignUpPage = () => {
                     <button
                       type="button"
                       onClick={removeProfileImage}
-                      className="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error"
+                      disabled={isSigningUp}
                       aria-label="Remove profile picture"
+                      className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-error text-error-content shadow-sm transition hover:scale-110"
                     >
-                      <X className="size-3" />
+                      <X size={14} />
                     </button>
                   )}
                 </div>
 
-                <label className="btn btn-outline btn-sm cursor-pointer">
-                  <Camera className="size-4" />
-                  Choose Image
+                <label
+                  className={`btn btn-outline btn-sm gap-2 ${
+                    isSigningUp
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }`}
+                >
+                  <Camera size={16} />
+                  {profilePreview ? "Change image" : "Choose image"}
 
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     className="hidden"
                     onChange={handleImageChange}
+                    disabled={isSigningUp}
                   />
                 </label>
               </div>
+
+              <p className="text-xs text-base-content/50">
+                JPG, PNG or WEBP. Maximum size 5 MB.
+              </p>
             </div>
 
-            {/* Fullname */}
-            <div className="form-control mb-6">
-              <label className="label">
-                <span className="label-text font-medium">Fullname</span>
+            {/* Full name */}
+            <div className="space-y-2">
+              <label htmlFor="fullname" className="text-sm font-medium">
+                Full name
               </label>
 
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="size-5 text-base-content/40" />
-                </div>
+                <User
+                  size={19}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40"
+                />
 
                 <input
+                  id="fullname"
+                  name="fullname"
                   type="text"
-                  className="input input-bordered w-full pl-10"
-                  placeholder="john doe"
+                  autoComplete="name"
+                  placeholder="John Doe"
+                  className="input input-bordered h-12 w-full pl-10"
                   value={formData.fullname}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      fullname: e.target.value,
-                    })
-                  }
+                  onChange={handleChange}
+                  required
+                  disabled={isSigningUp}
                 />
               </div>
             </div>
 
             {/* Email */}
-            <div className="form-control mb-6">
-              <label className="label">
-                <span className="label-text font-medium">Email</span>
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">
+                Email address
               </label>
 
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="size-5 text-base-content/40" />
-                </div>
+                <Mail
+                  size={19}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40"
+                />
 
                 <input
+                  id="email"
+                  name="email"
                   type="email"
-                  className="input input-bordered w-full pl-10"
-                  placeholder="you@sample.com"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  className="input input-bordered h-12 w-full pl-10"
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      email: e.target.value,
-                    })
-                  }
+                  onChange={handleChange}
+                  required
+                  disabled={isSigningUp}
                 />
               </div>
             </div>
 
             {/* Password */}
-            <div className="form-control mb-6">
-              <label className="label">
-                <span className="label-text font-medium">Password</span>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                Password
               </label>
 
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="size-5 text-base-content/40" />
-                </div>
+                <Lock
+                  size={19}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40"
+                />
 
                 <input
+                  id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
-                  className="input input-bordered w-full pl-10"
-                  placeholder="******"
+                  autoComplete="new-password"
+                  placeholder="Minimum 6 characters"
+                  className="input input-bordered h-12 w-full pl-10 pr-11"
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      password: e.target.value,
-                    })
-                  }
+                  onChange={handleChange}
+                  minLength={6}
+                  required
+                  disabled={isSigningUp}
                 />
 
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50 transition hover:text-base-content"
                 >
                   {showPassword ? (
-                    <EyeOff className="size-5 text-base-content/40" />
+                    <EyeOff size={19} />
                   ) : (
-                    <Eye className="size-5 text-base-content/40" />
+                    <Eye size={19} />
                   )}
                 </button>
               </div>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
-              className="btn btn-primary w-full mb-4"
+              className="btn btn-primary h-12 min-h-0 w-full text-sm font-semibold"
               disabled={isSigningUp}
             >
               {isSigningUp ? (
-                <Loader2 className="size-5 animate-spin" />
+                <>
+                  <Loader2 size={19} className="animate-spin" />
+                  Creating account...
+                </>
               ) : (
                 "Create Account"
               )}
             </button>
 
-            <div className="text-center">
-              <p className="text-base-content/60">
-                Already have an account?{" "}
-                <Link to="/login" className="link link-primary">
-                  Login now
-                </Link>
-              </p>
-            </div>
+            {/* Login link */}
+            <p className="text-center text-sm text-base-content/60">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-primary hover:underline"
+              >
+                Login now
+              </Link>
+            </p>
           </form>
         </div>
-      </div>
+      </section>
 
+      {/* Right side illustration */}
       <AuthImagePattern
         title="Join our community"
-        subtitle="Connect with friends, share moments, and stay with your loved ones"
+        subtitle="Connect with friends, share moments, and stay connected with your loved ones."
       />
-    </div>
-  )
+    </main>
+  );
 };
 
 export default SignUpPage;

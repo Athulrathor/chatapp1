@@ -1,60 +1,54 @@
-import { useAuthStore } from "../store/useAuthStore.js";
-import { LogOut, MessageSquare, Settings, User } from "lucide-react";
+
 import { Link } from "react-router-dom";
+import { LogOut, MessageCircle, Settings, User } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore.js";
 
 const Navbar = () => {
-
   const { logout, authUser } = useAuthStore();
 
   return (
-    <header className="bg-base-100 border-b border-base-300 fixed w-full top-0 z-40 backdrop-blur-lg bg-base-100/80">
-      <div className="container mx-auto px-4 h-16">
-        <div className="flex items-center justify-between h-full">
-          <div className="flex items-center gap-8">
-            <Link
-              to="/"
-              className="flex items-center gap-2.5 hover:opacity-80 transition-all cursor-pointer"
-            >
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-primary" />
-              </div>
-              <h1 className="text-lg font-bold">Chat</h1>
-            </Link>
+    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-base-300 bg-base-100/90 backdrop-blur-xl">
+      <nav className="mx-auto flex h-full max-w-[1600px] items-center justify-between px-3 sm:px-6">
+        <Link to="/" className="flex items-center gap-2.5">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-content">
+            <MessageCircle size={20} />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              to={"/setting"}
-              className={`btn btn-sm gap-2 transition-colors cursor-pointer`}
-            >
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Setting</span>
-            </Link>
+          <span className="text-lg font-bold tracking-tight">Chat</span>
+        </Link>
 
-            {authUser && (
-              <>
-                <Link
-                  to={"/profile"}
-                  className={`btn btn-sm gap-2 cursor-pointer`}
-                >
-                  <User className="size-5" />
-                  <span className="hidden sm:inline">Profile</span>
-                </Link>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Link
+            to="/setting"
+            className="flex size-9 items-center justify-center rounded-xl text-base-content/60 hover:bg-base-200 sm:w-auto sm:gap-2 sm:px-3"
+          >
+            <Settings size={18} />
+            <span className="hidden text-sm sm:inline">Settings</span>
+          </Link>
 
-                <button
-                  className="flex items-center gap-2 cursor-pointer"
-                  onClick={logout}
-                >
-                  <LogOut className="size-5" />
-                  <span className="hidden sm:inline">Logout</span>
-                </button>
-              </>
-            )}
-          </div>
+          {authUser && (
+            <>
+              <Link
+                to="/profile"
+                className="flex size-9 items-center justify-center rounded-xl text-base-content/60 hover:bg-base-200 sm:w-auto sm:gap-2 sm:px-3"
+              >
+                <User size={18} />
+                <span className="hidden text-sm sm:inline">Profile</span>
+              </Link>
+
+              <button
+                onClick={logout}
+                className="flex size-9 items-center justify-center rounded-xl text-error hover:bg-error/10 sm:w-auto sm:gap-2 sm:px-3"
+              >
+                <LogOut size={18} />
+                <span className="hidden text-sm sm:inline">Logout</span>
+              </button>
+            </>
+          )}
         </div>
-      </div>
+      </nav>
     </header>
   );
-}
+};
 
-export default Navbar
+export default Navbar;

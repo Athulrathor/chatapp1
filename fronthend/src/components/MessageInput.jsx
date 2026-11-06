@@ -1,7 +1,7 @@
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ImagePlus, Send, X } from "lucide-react";
 import { useChatStore } from "../store/useChatStore.js";
-import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 const MessageInput = () => {
@@ -13,19 +13,25 @@ const MessageInput = () => {
   const { sendMessages } = useChatStore();
   const fileInputRef = useRef(null);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
+
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+      toast.error("Please select an image");
       e.target.value = "";
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size must be less than 5 MB");
+      toast.error("Image must be smaller than 5 MB");
       e.target.value = "";
       return;
     }
@@ -35,10 +41,6 @@ const MessageInput = () => {
   };
 
   const removeImage = () => {
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
-
     setImagePreview(null);
     setSelectedImage(null);
 
@@ -47,10 +49,10 @@ const MessageInput = () => {
     }
   };
 
-  const handleSendMessages = async (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
 
-    if (!text.trim() && !selectedImage) return;
+    if ((!text.trim() && !selectedImage) || isSending) return;
 
     try {
       setIsSending(true);
@@ -70,68 +72,66 @@ const MessageInput = () => {
   };
 
   return (
-    <div className="p-4 w-full">
-      {imagePreview && (
-        <div className="mb-3 flex items-center gap-2">
-          <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Image preview"
-              className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
-            />
+    <footer className="shrink-0 border-t border-base-300 bg-base-100 p-3 sm:p-4">
+      <div className="mx-auto max-w-4xl">
+        {imagePreview && (
+          <div className="mb-3 inline-flex items-start">
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Image preview"
+                className="size-20 rounded-xl border border-base-300 object-cover"
+              />
 
-            <button
-              type="button"
-              onClick={removeImage}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center"
-            >
-              <X className="size-3" />
-            </button>
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-base-content text-base-100 shadow"
+                aria-label="Remove image"
+              >
+                <X size={13} />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <form
-        onSubmit={handleSendMessages}
-        className="flex items-center gap-2"
-      >
-        <div className="flex-1 flex gap-2">
-          <input
-            type="text"
-            className="w-full input input-bordered rounded-lg input-sm sm:input-md"
-            placeholder="Type a message..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-
+        <form onSubmit={handleSend} className="flex min-w-0 items-center gap-2">
           <input
             type="file"
             accept="image/*"
-            className="hidden"
             ref={fileInputRef}
             onChange={handleImageChange}
+            className="hidden"
           />
 
           <button
             type="button"
-            className={`hidden sm:flex btn btn-circle ${
-              imagePreview ? "text-emerald-500" : "text-zinc-400"
-            }`}
             onClick={() => fileInputRef.current?.click()}
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl text-base-content/60 transition hover:bg-base-200 hover:text-primary sm:size-11"
+            aria-label="Attach image"
           >
-            <Image size={20} />
+            <ImagePlus size={21} />
           </button>
+
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write a message..."
+            className="h-11 min-w-0 flex-1 rounded-xl border border-base-300 bg-base-200/60 px-3 text-sm outline-none transition focus:border-primary focus:bg-base-100"
+          />
 
           <button
             type="submit"
-            className="hidden sm:flex btn btn-circle"
             disabled={isSending || (!text.trim() && !selectedImage)}
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-content transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:size-11"
+            aria-label="Send message"
           >
-            <Send size={20} />
+            <Send size={18} />
           </button>
-        </div>
-      </form>
-    </div>
+        </form>
+      </div>
+    </footer>
   );
 };
 
